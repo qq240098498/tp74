@@ -67,6 +67,29 @@
           <button type="button" id="entry-new">新建文案</button>
         </div>
       </div>
+      <div class="inspection">
+        <button type="button" id="inspection-run">巡检译文覆盖情况</button>
+        <span class="panel-tip" id="inspection-hint">按当前存在的文案总条数，看每种语言填了多少、还空着多少</span>
+        <div class="inspection-panel hidden" id="inspection-panel">
+          <div class="inspection-summary" id="inspection-summary"></div>
+          <div class="table-wrap">
+            <table class="grid inspection-grid">
+              <thead>
+                <tr>
+                  <th>语言</th>
+                  <th class="num">已填译文</th>
+                  <th class="num">空缺译文</th>
+                  <th class="num">已填占比</th>
+                  <th class="num">空缺占比</th>
+                  <th>覆盖情况</th>
+                </tr>
+              </thead>
+              <tbody id="inspection-body"></tbody>
+            </table>
+          </div>
+          <p class="inspection-note">占比按当前现存的文案总条数统一折算、四舍五入取整，空缺占比由 100% 减去已填占比得到，两者合计恒为 100%。</p>
+        </div>
+      </div>
       <div class="table-wrap">
         <table class="grid">
           <thead>

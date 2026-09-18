@@ -4,6 +4,7 @@ const state = {
   languages: [],
   entries: [],
   modules: [],
+  inspection: null,
   editingId: '',
 };
 
@@ -115,6 +116,42 @@ async function loadEntries() {
   state.modules = payload.modules || [];
   renderModules();
   renderEntries();
+  // 巡检面板展开着就顺手重算一次，保存或删除文案后数字始终是最新的
+  if (!el('inspection-panel').classList.contains('hidden')) {
+    loadInspection().catch(() => {});
+  }
+}
+
+// 全局巡检：分母统一由服务端按当前现存文案总条数算好，页面只负责展示
+async function loadInspection() {
+  state.inspection = await request('/api/inspection');
+  renderInspection();
+}
+
+function renderInspection() {
+  const data = state.inspection;
+  if (!data) return;
+  el('inspection-summary').innerHTML = `本次巡检共 <strong>${data.total}</strong> 条文案，覆盖 <strong>${data.languages.length}</strong> 种语言
+    <span class="inspection-legend"><span class="swatch swatch-filled"></span>已填<span class="swatch swatch-empty"></span>空缺</span>`;
+  const body = el('inspection-body');
+  body.innerHTML = data.languages.map((item) => {
+    const tags = [
+      item.isDefault ? '<span class="tag on">默认</span>' : '',
+      item.enabled ? '' : '<span class="tag off">已停用</span>',
+    ].join('');
+    const label = `已填 ${item.filled} 条（${item.filledPercent}%），空缺 ${item.empty} 条（${item.emptyPercent}%），分母为 ${data.total} 条文案`;
+    return `<tr${item.enabled ? '' : ' class="muted"'}>
+      <td>
+        <div class="inspection-name">${escapeHtml(item.name)} ${tags}</div>
+        <span class="mono inspection-code">${escapeHtml(item.code)}</span>
+      </td>
+      <td class="num">${item.filled} / ${data.total}</td>
+      <td class="num">${item.empty} / ${data.total}</td>
+      <td class="num">${item.filledPercent}%</td>
+      <td class="num">${item.emptyPercent}%</td>
+      <td><div class="meter" role="img" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}"><span class="meter-fill" style="width:${item.filledPercent}%"></span></div></td>
+    </tr>`;
+  }).join('');
 }
 
 function renderModules() {
@@ -354,6 +391,12 @@ el('entry-refresh').addEventListener('click', () => {
   clearNotice();
   loadLanguages()
     .then(loadEntries)
+    .catch((err) => notify(err.message, 'error'));
+});
+el('inspection-run').addEventListener('click', () => {
+  clearNotice();
+  loadInspection()
+    .then(() => el('inspection-panel').classList.remove('hidden'))
     .catch((err) => notify(err.message, 'error'));
 });
 el('filter-module').addEventListener('change', () => {

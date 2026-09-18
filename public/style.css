@@ -376,3 +376,104 @@ label.full input {
   display: flex;
   gap: 10px;
 }
+
+/* 巡检入口与结果：横条只承担一眼扫过去的比较，具体数字在各列里都能查到 */
+.inspection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin-bottom: 12px;
+}
+
+.inspection-panel {
+  flex-basis: 100%;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f9fafc;
+}
+
+.inspection-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.inspection-summary strong {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.inspection-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: 10px;
+  border-radius: 2px;
+}
+
+.swatch-filled {
+  background: var(--accent);
+}
+
+.swatch-empty {
+  background: var(--line);
+}
+
+table.inspection-grid {
+  min-width: 640px;
+}
+
+table.inspection-grid td.num,
+table.inspection-grid th.num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.inspection-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.inspection-code {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+/* 覆盖率横条：整条轨道即空缺部分，蓝色段为已填，2px 内边距留出段间间隙 */
+.meter {
+  width: 220px;
+  height: 12px;
+  padding: 2px;
+  border-radius: 6px;
+  background: var(--line);
+}
+
+.meter-fill {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: 4px;
+  background: var(--accent);
+}
+
+.inspection-note {
+  margin: 10px 0 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+}

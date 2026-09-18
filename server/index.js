@@ -41,6 +41,11 @@ app.delete('/api/languages/:code', (req, res) => {
   }
 });
 
+// 全局巡检：按语言给出已填与空缺译文的条数及在文案总条数中的占比
+app.get('/api/inspection', (_req, res) => {
+  res.json(api.getInspection());
+});
+
 // 文案列表：按模块与关键词筛选，返回值里带上各模块的条数，页面据此刷新筛选下拉
 app.get('/api/entries', (req, res) => {
   const result = api.listEntries({
