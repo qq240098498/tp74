@@ -204,6 +204,73 @@ function renderEntries() {
   el('entry-empty').classList.toggle('hidden', state.entries.length > 0);
 }
 
+// 巡检面板：按语言横向比较已填与空缺。占比由服务端按统一分母与取整口径算好，前端只展示
+async function loadInspection() {
+  const payload = await request('/api/inspection');
+  renderInspection(payload);
+}
+
+function renderInspection(payload) {
+  const data = payload || { total: 0, languages: [] };
+  const total = Number.isFinite(data.total) ? data.total : 0;
+
+  el('inspection-tip').textContent = total
+    ? `当前共有 ${total} 条文案，下表各语言的占比都以这 ${total} 条为分母；空着包括填了空串与从未登记两种情况`
+    : '当前还没有任何文案，先新建文案后再巡检';
+
+  const rows = (data.languages || []).map((item) => {
+    const tags = [
+      item.isDefault ? '<span class="tag on">默认</span>' : '',
+      item.enabled ? '' : '<span class="tag off">已停用</span>',
+    ].join('');
+    const segments = [
+      item.filledPercent > 0
+        ? `<div class="meter-fill" style="width:${item.filledPercent}%" title="已填 ${item.filled} 条，占 ${item.filledPercent}%"></div>`
+        : '',
+      item.emptyPercent > 0
+        ? `<div class="meter-empty" style="width:${item.emptyPercent}%" title="空着 ${item.empty} 条，占 ${item.emptyPercent}%"></div>`
+        : '',
+    ].join('');
+    return `<tr${item.enabled ? '' : ' class="muted"'}>
+      <td>
+        <div class="lang-name">${escapeHtml(item.name)} ${tags}</div>
+        <div class="mono lang-code">${escapeHtml(item.code)}</div>
+      </td>
+      <td class="meter-cell">
+        <div class="meter" role="img" aria-label="${escapeHtml(item.name)}共 ${total} 条，已填 ${item.filled} 条，空着 ${item.empty} 条">
+          ${segments}
+        </div>
+        <span class="meter-label">${item.filledPercent}% 已填 · ${item.emptyPercent}% 空着</span>
+      </td>
+      <td class="num">${item.filled} <span class="ratio">/${total}</span></td>
+      <td class="num">${item.empty} <span class="ratio">/${total}</span></td>
+    </tr>`;
+  });
+  el('inspection-body').innerHTML = rows.join('');
+}
+
+async function toggleInspection() {
+  const panel = el('inspection-panel');
+  const opening = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !opening);
+  el('entry-inspect').textContent = opening ? '收起巡检' : '巡检';
+  if (opening) {
+    try {
+      await loadInspection();
+    } catch (err) {
+      panel.classList.add('hidden');
+      el('entry-inspect').textContent = '巡检';
+      notify(err.message, 'error');
+    }
+  }
+}
+
+// 数据有增删改后，若巡检面板正开着就顺手刷新，让结果与表格保持一致
+function refreshInspectionIfOpen() {
+  if (el('inspection-panel').classList.contains('hidden')) return Promise.resolve();
+  return loadInspection().catch((err) => notify(err.message, 'error'));
+}
+
 function openEntryForm(entry) {
   state.editingId = entry ? entry.id : '';
   el('entry-form-title').textContent = entry ? `编辑文案：${entry.key}` : '新建文案';
@@ -240,6 +307,7 @@ async function submitLanguage(event) {
     notify('语言已新增', 'ok');
     await loadLanguages();
     await loadEntries();
+    await refreshInspectionIfOpen();
   } catch (err) {
     notify(err.message, 'error');
     markField(err.field);
@@ -269,6 +337,7 @@ async function submitEntry(event) {
     closeEntryForm();
     await loadEntries();
     await loadLanguages();
+    await refreshInspectionIfOpen();
   } catch (err) {
     notify(err.message, 'error');
     markField(err.field);
@@ -305,6 +374,7 @@ document.addEventListener('click', async (event) => {
       }
       await loadLanguages();
       await loadEntries();
+      await refreshInspectionIfOpen();
     } catch (err) {
       notify(err.message, 'error');
     }
@@ -328,6 +398,7 @@ document.addEventListener('click', async (event) => {
       notify('文案已删除', 'ok');
       await loadEntries();
       await loadLanguages();
+      await refreshInspectionIfOpen();
     } catch (err) {
       notify(err.message, 'error');
     }
@@ -354,7 +425,12 @@ el('entry-refresh').addEventListener('click', () => {
   clearNotice();
   loadLanguages()
     .then(loadEntries)
+    .then(refreshInspectionIfOpen)
     .catch((err) => notify(err.message, 'error'));
+});
+el('entry-inspect').addEventListener('click', () => {
+  clearNotice();
+  toggleInspection();
 });
 el('filter-module').addEventListener('change', () => {
   loadEntries().catch((err) => notify(err.message, 'error'));

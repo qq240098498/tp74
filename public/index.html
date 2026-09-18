@@ -64,7 +64,32 @@
           <button type="button" id="filter-apply">筛选</button>
           <button type="button" id="filter-reset" class="ghost">重置</button>
           <button type="button" id="entry-refresh" class="ghost">刷新</button>
+          <button type="button" id="entry-inspect" class="ghost">巡检</button>
           <button type="button" id="entry-new">新建文案</button>
+        </div>
+      </div>
+
+      <div class="inspection hidden" id="inspection-panel">
+        <div class="inspection-head">
+          <h3>译文覆盖巡检</h3>
+          <div class="legend">
+            <span class="legend-item"><i class="swatch swatch-filled"></i>已填译文</span>
+            <span class="legend-item"><i class="swatch swatch-empty"></i>空着</span>
+          </div>
+        </div>
+        <p class="inspection-tip" id="inspection-tip"></p>
+        <div class="table-wrap">
+          <table class="grid inspection-grid">
+            <thead>
+              <tr>
+                <th>语言</th>
+                <th>覆盖情况</th>
+                <th class="num">已填译文</th>
+                <th class="num">空着</th>
+              </tr>
+            </thead>
+            <tbody id="inspection-body"></tbody>
+          </table>
         </div>
       </div>
       <div class="table-wrap">
